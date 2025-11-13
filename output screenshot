@@ -1,0 +1,178 @@
+import java.util.*;
+import java.io.*;
+
+class Employee {
+    private String id;
+    private String name;
+    private String designation;
+    private double basicPay;
+
+    public Employee(String id, String name, String designation, double basicPay) {
+        this.id = id;
+        this.name = name;
+        this.designation = designation;
+        this.basicPay = basicPay;
+    }
+
+    // Getters and Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getDesignation() { return designation; }
+    public void setDesignation(String designation) { this.designation = designation; }
+
+    public double getBasicPay() { return basicPay; }
+    public void setBasicPay(double basicPay) { this.basicPay = basicPay; }
+
+    @Override
+    public String toString() {
+        return id + " | " + name + " | " + designation + " | Basic Pay: " + basicPay;
+    }
+}
+
+class Payroll {
+    private String empId;
+    private String empName;
+    private double grossPay;
+    private double deductions;
+    private double netPay;
+
+    public Payroll(String empId, String empName, double grossPay, double deductions, double netPay) {
+        this.empId = empId;
+        this.empName = empName;
+        this.grossPay = grossPay;
+        this.deductions = deductions;
+        this.netPay = netPay;
+    }
+
+    @Override
+    public String toString() {
+        return "Payroll for " + empName + " (" + empId + "): " +
+                "\nGross Pay = " + grossPay +
+                "\nDeductions = " + deductions +
+                "\nNet Pay = " + netPay;
+    }
+}
+
+class PayrollCalculator {
+    private static final double HRA_PERCENT = 0.20;
+    private static final double DA_PERCENT = 0.10;
+    private static final double PF_PERCENT = 0.12;
+    private static final double TAX_PERCENT = 0.10;
+
+    public static Payroll calculate(Employee emp) {
+        double basic = emp.getBasicPay();
+        double hra = basic * HRA_PERCENT;
+        double da = basic * DA_PERCENT;
+        double gross = basic + hra + da;
+        double pf = basic * PF_PERCENT;
+        double tax = gross * TAX_PERCENT;
+        double totalDeductions = pf + tax;
+        double net = gross - totalDeductions;
+        return new Payroll(emp.getId(), emp.getName(), gross, totalDeductions, net);
+    }
+}
+
+public class Main {
+    private static Scanner sc = new Scanner(System.in);
+    private static List<Employee> employees = new ArrayList<>();
+
+    public static void main(String[] args) {
+        boolean running = true;
+        while (running) {
+            System.out.println("\n=== Employee Payroll System ===");
+            System.out.println("1. Add Employee");
+            System.out.println("2. View Employees");
+            System.out.println("3. Update Employee");
+            System.out.println("4. Delete Employee");
+            System.out.println("5. Calculate Payroll");
+            System.out.println("6. Exit");
+            System.out.print("Choose option: ");
+            String choice = sc.nextLine();
+
+            switch (choice) {
+                case "1": addEmployee(); break;
+                case "2": viewEmployees(); break;
+                case "3": updateEmployee(); break;
+                case "4": deleteEmployee(); break;
+                case "5": calculatePayroll(); break;
+                case "6": running = false; System.out.println("Exiting program..."); break;
+                default: System.out.println("Invalid option! Try again.");
+            }
+        }
+    }
+
+    private static void addEmployee() {
+        System.out.print("Enter ID: ");
+        String id = sc.nextLine();
+        System.out.print("Enter Name: ");
+        String name = sc.nextLine();
+        System.out.print("Enter Designation: ");
+        String des = sc.nextLine();
+        System.out.print("Enter Basic Pay: ");
+        double basic = Double.parseDouble(sc.nextLine());
+        employees.add(new Employee(id, name, des, basic));
+        System.out.println("✅ Employee added successfully!");
+    }
+
+    private static void viewEmployees() {
+        System.out.println("\n--- Employee List ---");
+        if (employees.isEmpty()) {
+            System.out.println("No employees found.");
+            return;
+        }
+        for (Employee e : employees) {
+            System.out.println(e);
+        }
+    }
+
+    private static void updateEmployee() {
+        System.out.print("Enter Employee ID to update: ");
+        String id = sc.nextLine();
+        for (Employee e : employees) {
+            if (e.getId().equals(id)) {
+                System.out.print("Enter new name (or press Enter to keep): ");
+                String name = sc.nextLine();
+                if (!name.isEmpty()) e.setName(name);
+
+                System.out.print("Enter new designation (or press Enter to keep): ");
+                String des = sc.nextLine();
+                if (!des.isEmpty()) e.setDesignation(des);
+
+                System.out.print("Enter new basic pay (or press Enter to keep): ");
+                String basic = sc.nextLine();
+                if (!basic.isEmpty()) e.setBasicPay(Double.parseDouble(basic));
+
+                System.out.println("✅ Employee updated successfully!");
+                return;
+            }
+        }
+        System.out.println("❌ Employee ID not found.");
+    }
+
+    private static void deleteEmployee() {
+        System.out.print("Enter Employee ID to delete: ");
+        String id = sc.nextLine();
+        boolean removed = employees.removeIf(e -> e.getId().equals(id));
+        if (removed)
+            System.out.println("✅ Employee deleted successfully!");
+        else
+            System.out.println("❌ Employee ID not found.");
+    }
+
+    private static void calculatePayroll() {
+        System.out.print("Enter Employee ID for payroll calculation: ");
+        String id = sc.nextLine();
+        for (Employee e : employees) {
+            if (e.getId().equals(id)) {
+                Payroll p = PayrollCalculator.calculate(e);
+                System.out.println(p);
+                return;
+            }
+        }
+        System.out.println("❌ Employee ID not found.");
+    }
+}
